@@ -1,6 +1,5 @@
 import { AppSidebar } from "@/components/sidebar";
-import { Separator } from "@/components/ui/separator";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -28,7 +27,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
       </div>
     </header> */}
         {/* <Outlet /> */}
-        <div className="p-4">{children}</div>
+        <div className="p-4 flex-grow">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );
