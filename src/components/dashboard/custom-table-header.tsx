@@ -24,7 +24,6 @@ export function CustomTableHeader({
         {table.getHeaderGroups().map((headerGroup: any) => (
           <TableRow key={headerGroup.id} className="dark:text-white">
             {headerGroup.headers.map((header: any, index: number) => {
-              console.log(header.column);
               // We used here TableCell instead of TableHead because "sticky" has no effect on "th".
               // It is also specifically look for two column names "select" and "question", that whenever we see them, we make the column header sticky.
               return (

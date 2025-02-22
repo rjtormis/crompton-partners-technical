@@ -1,20 +1,9 @@
+import { options, prisma } from "@/app/api/auth/[...nextauth]/options";
+import { NextApiRequest } from "next";
 import { getServerSession } from "next-auth";
-import { options, prisma } from "../../auth/[...nextauth]/options";
 import { NextResponse } from "next/server";
 
-export async function GET() {
-  const session = await getServerSession(options);
-
-  if (!session) {
-    return NextResponse.json({ Unauthorized: true }, { status: 401 });
-  }
-
-  const queryAllProperties = await prisma.property.findMany({});
-
-  return NextResponse.json({ properties: queryAllProperties });
-}
-
-export async function POST(req: Request) {
+export async function GET(req: Request) {
   const session = await getServerSession(options);
 
   if (!session) {
@@ -32,17 +21,51 @@ export async function POST(req: Request) {
   // Get all images since it's a File[]
   const images = form.getAll("images") as File[];
 
-  const queryListing = await prisma.property.findFirst({
+  // Check if listing exists.
+  const queryProperty = await prisma.property.findFirst({
     where: {
-      name: form.get("name") as string,
+      name: form.get("id") as string,
     },
   });
 
-  if (queryListing) {
-    return NextResponse.json({ error: "Listing already exists" }, { status: 409 });
+  if (!queryProperty) {
+    return NextResponse.json({ message: "Property not found" }, { status: 404 });
+  }
+
+  return NextResponse.json({ property: queryProperty });
+}
+
+export async function PATCH(req: Request) {
+  const session = await getServerSession(options);
+
+  if (!session) {
+    return NextResponse.json({ Unauthorized: true }, { status: 401 });
+  }
+
+  const queryUser = await prisma.user.findFirst({ where: { id: session.user.id } });
+
+  if (!queryUser) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
+  const form = await req.formData();
+
+  // Get all images since it's a File[]
+  const images = form.getAll("images") as File[];
+
+  // Check if listing exists.
+  const queryProperty = await prisma.property.findFirst({
+    where: {
+      id: form.get("id") as string,
+    },
+  });
+
+  if (!queryProperty) {
+    return NextResponse.json({ message: "Property not found" }, { status: 404 });
   }
 
   // Extract and validate form data
+  const id = form.get("id") as string;
   const name = form.get("name") as string;
   const description = form.get("description") as string;
   const type = form.get("type") as string;
@@ -67,9 +90,10 @@ export async function POST(req: Request) {
   }
 
   // TODO: Handle Image upload
-
-  // Create the property
-  const createListing = await prisma.property.create({
+  const updateListing = await prisma.property.update({
+    where: {
+      id,
+    },
     data: {
       name,
       description,
@@ -79,14 +103,13 @@ export async function POST(req: Request) {
       bathroom,
       bedroom,
       price,
-      userId: session.user.id,
     },
   });
 
-  return NextResponse.json({ property: createListing, message: "Property created successfully" });
+  return NextResponse.json({ property: updateListing, message: "Property updated successfully" });
 }
 
-export async function DELETE(req: Request) {
+export const DELETE = async (req: Request) => {
   const session = await getServerSession(options);
 
   if (!session) {
@@ -99,13 +122,27 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  const { ids } = req.body;
+  const { id } = req.body;
 
-  if (!ids) {
+  if (!id) {
     return NextResponse.json({ error: "Missing or invalid form data" }, { status: 400 });
   }
 
-  await prisma.property.deleteMany(ids);
+  const queryProperty = await prisma.property.findFirst({
+    where: {
+      id,
+    },
+  });
 
-  return NextResponse.json({ message: "Properties deleted successfully" });
-}
+  if (!queryProperty) {
+    return NextResponse.json({ message: "Property not found" }, { status: 404 });
+  }
+
+  await prisma.property.delete({
+    where: {
+      id,
+    },
+  });
+
+  return NextResponse.json({ message: "Property deleted successfully" });
+};

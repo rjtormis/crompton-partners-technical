@@ -21,10 +21,8 @@ export const options: NextAuthOptions = {
               name: credentials.username,
             },
           });
-          console.log(credentials);
 
           if (!user) return null;
-          console.log(credentials.password === user.password);
 
           if (credentials.password === user.password) {
             return user;

@@ -3,13 +3,12 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "../ui/button";
-import { Building, Pencil, Plus } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { Field, FieldProps, Form, Formik, FormikHelpers } from "formik";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
@@ -24,28 +23,68 @@ import Image from "next/image";
 import { useState } from "react";
 import FileUpload from "../file-upload";
 import { Textarea } from "../ui/textarea";
+import { Property } from "@prisma/client";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
-function UpdateListingDialog() {
+function UpdateListingDialog({ listing }: { listing: Property }) {
   const [files, setFiles] = useState<string[]>([]);
+  const [open, setOpen] = useState<boolean>(false);
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  const router = useRouter();
 
   const initialValues = {
-    name: "",
-    description: "",
-    price: "",
-    type: "",
-    bedroom: "",
-    bathroom: "",
-    status: "",
-    location: "",
+    name: listing.name,
+    description: listing.description,
+    price: listing.price,
+    type: listing.type,
+    bedroom: listing.bedroom,
+    bathroom: listing.bathroom,
+    status: listing.status,
+    location: listing.location,
     images: [],
   };
 
-  const handleCreateListing = (
+  const handleUpdateListing = async (
     values: typeof initialValues,
     actions: FormikHelpers<typeof initialValues>
   ) => {
-    console.log(values);
+    setSubmitting(true);
+    const formData = new FormData();
+
+    formData.append("id", listing.id);
+    formData.append("name", values.name);
+    formData.append("description", values.description);
+    formData.append("price", String(values.price));
+    formData.append("type", values.type);
+    formData.append("bedroom", String(values.bedroom));
+    formData.append("bathroom", String(values.bathroom));
+    formData.append("status", values.status);
+    formData.append("location", values.location);
+
+    const data = await fetch(`/api/dashboard/property/${listing.id}`, {
+      method: "PATCH",
+      body: formData,
+    });
+
+    // Handle success toast
+    if (data.ok) {
+      setSubmitting(false);
+      toast.success("Listing updated successfully", {
+        description: <p className="text-black">Listing {values.name} updated successfully..</p>,
+      });
+      actions.resetForm();
+      setOpen(false);
+      router.refresh();
+    }
+
+    if (!data.ok) {
+      toast.error(`An error occured.`, {
+        description: <p className="text-black">An error occured, please try again.</p>,
+      });
+    }
   };
+
   const handleRemoveFile = (file: string) => {
     URL.revokeObjectURL(file);
     const filteredFiles = files.filter((f) => f !== file);
@@ -53,14 +92,14 @@ function UpdateListingDialog() {
   };
 
   return (
-    <Dialog>
+    <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon">
           <Pencil />
         </Button>
       </DialogTrigger>
       <DialogContent>
-        <Formik initialValues={initialValues} onSubmit={handleCreateListing}>
+        <Formik initialValues={initialValues} onSubmit={handleUpdateListing}>
           <Form>
             <DialogHeader>
               <DialogTitle className="flex gap-2">
@@ -112,7 +151,7 @@ function UpdateListingDialog() {
                           <span className="text-red-500 ml-1">{meta.error}</span>
                         ) : null}
                       </Label>
-                      <Input id="price" type="string" {...field} />
+                      <Input id="price" type="number" {...field} />
                     </div>
                   </div>
                 )}
@@ -169,7 +208,7 @@ function UpdateListingDialog() {
 
               <div className="grid grid-cols-2 gap-4">
                 <Field name="status">
-                  {({ meta, form }: FieldProps) => (
+                  {({ field, meta, form }: FieldProps) => (
                     <div className="space-y-1 my-2">
                       <div className="space-y-1">
                         <Label htmlFor="status">
@@ -178,14 +217,17 @@ function UpdateListingDialog() {
                             <span className="text-red-500 ml-1">{meta.error}</span>
                           ) : null}
                         </Label>
-                        <Select onValueChange={(e) => form.setFieldValue("status", e)}>
+                        <Select
+                          value={field.value}
+                          onValueChange={(e) => form.setFieldValue("status", e)}
+                        >
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Theme" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="available">Available</SelectItem>
                             <SelectItem value="rented">Rented</SelectItem>
-                            <SelectItem value="sold">sold</SelectItem>
+                            <SelectItem value="sold">Sold</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -193,7 +235,7 @@ function UpdateListingDialog() {
                   )}
                 </Field>
                 <Field name="type">
-                  {({ meta, form }: FieldProps) => (
+                  {({ field, meta, form }: FieldProps) => (
                     <div className="space-y-1 my-2">
                       <div className="space-y-1">
                         <Label htmlFor="type">
@@ -202,7 +244,10 @@ function UpdateListingDialog() {
                             <span className="text-red-500 ml-1">{meta.error}</span>
                           ) : null}
                         </Label>
-                        <Select onValueChange={(e) => form.setFieldValue("type", e)}>
+                        <Select
+                          value={field.value}
+                          onValueChange={(e) => form.setFieldValue("type", e)}
+                        >
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Theme" />
                           </SelectTrigger>
@@ -264,8 +309,8 @@ function UpdateListingDialog() {
               ) : null}
             </div>
             <div className="flex my-4">
-              <Button type="submit" className="ml-auto">
-                Create
+              <Button type="submit" className="ml-auto" disabled={submitting}>
+                {submitting ? "Updating..." : "Update"}
               </Button>
             </div>
           </Form>

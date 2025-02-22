@@ -24,9 +24,15 @@ import Image from "next/image";
 import { useState } from "react";
 import FileUpload from "../file-upload";
 import { Textarea } from "../ui/textarea";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 function NewListingDialog() {
+  const [open, setOpen] = useState<boolean>(false);
   const [files, setFiles] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+
+  const router = useRouter();
 
   const initialValues = {
     name: "",
@@ -40,12 +46,58 @@ function NewListingDialog() {
     images: [],
   };
 
-  const handleCreateListing = (
+  const handleCreateListing = async (
     values: typeof initialValues,
     actions: FormikHelpers<typeof initialValues>
   ) => {
-    console.log(values);
+    setSubmitting(true);
+
+    const formData = new FormData();
+
+    formData.append("name", values.name);
+    formData.append("description", values.description);
+    formData.append("price", values.price);
+    formData.append("type", values.type);
+    formData.append("bedroom", values.bedroom);
+    formData.append("bathroom", values.bathroom);
+    formData.append("status", values.status);
+    formData.append("location", values.location);
+
+    // TODO: Handle Image upload
+
+    const data = await fetch("/api/dashboard/property", {
+      method: "POST",
+      body: formData,
+    });
+
+    // Handle success toast
+    if (data.ok) {
+      setSubmitting(false);
+      toast.success("Listing created successfully", {
+        description: <p className="text-black">Listing {values.name} created successfully..</p>,
+      });
+      actions.resetForm();
+      setOpen(false);
+      router.refresh();
+    }
+    // Handle existing listing toast
+    if (!data.ok && data.status === 409) {
+      toast.error(`Listing ${values.name} already exists`, {
+        description: (
+          <p className="text-black">Listing {values.name} already exists. Please try again.</p>
+        ),
+      });
+    }
+
+    if (!data.ok) {
+      toast.error(`An error occured.`, {
+        description: <p className="text-black">An error occured, please try again.</p>,
+      });
+    }
+
+    setSubmitting(false);
   };
+
   const handleRemoveFile = (file: string) => {
     URL.revokeObjectURL(file);
     const filteredFiles = files.filter((f) => f !== file);
@@ -112,7 +164,7 @@ function NewListingDialog() {
                           <span className="text-red-500 ml-1">{meta.error}</span>
                         ) : null}
                       </Label>
-                      <Input id="price" type="string" {...field} />
+                      <Input id="price" type="number" {...field} />
                     </div>
                   </div>
                 )}
@@ -264,8 +316,8 @@ function NewListingDialog() {
               ) : null}
             </div>
             <div className="flex my-4">
-              <Button type="submit" className="ml-auto">
-                Create
+              <Button type="submit" className="ml-auto" disabled={submitting}>
+                {submitting ? "Creating..." : "Create"}
               </Button>
             </div>
           </Form>

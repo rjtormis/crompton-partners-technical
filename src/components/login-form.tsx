@@ -55,7 +55,7 @@ function LoginForm() {
   return (
     <div className="flex-grow flex items-center justify-center">
       <Formik initialValues={initialValues} onSubmit={handleLogin}>
-        {({ values, handleChange, handleSubmit }) => (
+        {({}) => (
           <Form>
             <Card className="w-[350px]">
               <CardHeader className="text-center">
