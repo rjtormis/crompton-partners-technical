@@ -7,52 +7,77 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Property } from "@prisma/client";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "../ui/checkbox";
 import { Button } from "../ui/button";
 import { MoreHorizontal } from "lucide-react";
+import UpdateListingDialog from "./update-listing-dialog";
 
-export const payments: Payment[] = [
+export const properties: Property[] = [
   {
     id: "m5gr84i9",
-    amount: 316,
+    name: "Luxury Villa",
+    description: "A beautiful beachfront villa with stunning views.",
+    type: "Villa",
     status: "success",
-    email: "ken99@yahoo.com",
+    location: "Miami, FL",
+    bathroom: 3,
+    bedroom: 5,
+    price: 1200000,
+    userId: "user123",
   },
   {
     id: "3u1reuv4",
-    amount: 242,
+    name: "Modern Apartment",
+    description: "A high-rise apartment in the city center.",
+    type: "Apartment",
     status: "success",
-    email: "Abe45@gmail.com",
+    location: "New York, NY",
+    bathroom: 2,
+    bedroom: 3,
+    price: 750000,
+    userId: "user456",
   },
   {
     id: "derv1ws0",
-    amount: 837,
+    name: "Cozy Cottage",
+    description: "A quiet countryside cottage surrounded by nature.",
+    type: "Cottage",
     status: "processing",
-    email: "Monserrat44@gmail.com",
+    location: "Asheville, NC",
+    bathroom: 1,
+    bedroom: 2,
+    price: 250000,
+    userId: "user789",
   },
   {
     id: "5kma53ae",
-    amount: 874,
+    name: "Penthouse Suite",
+    description: "A luxury penthouse with skyline views.",
+    type: "Penthouse",
     status: "success",
-    email: "Silas22@gmail.com",
+    location: "Los Angeles, CA",
+    bathroom: 4,
+    bedroom: 6,
+    price: 2200000,
+    userId: "user101",
   },
   {
     id: "bhqecj4p",
-    amount: 721,
+    name: "Suburban Home",
+    description: "A spacious family home in a quiet neighborhood.",
+    type: "House",
     status: "failed",
-    email: "carmella@hotmail.com",
+    location: "Dallas, TX",
+    bathroom: 3,
+    bedroom: 4,
+    price: 600000,
+    userId: "user102",
   },
 ];
 
-export type Payment = {
-  id: string;
-  amount: number;
-  status: "pending" | "processing" | "success" | "failed";
-  email: string;
-};
-
-export const columns: ColumnDef<Payment>[] = [
+export const columns: ColumnDef<Property>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -75,55 +100,49 @@ export const columns: ColumnDef<Payment>[] = [
     enableHiding: false,
   },
   {
+    accessorKey: "name",
+    header: "Name",
+    cell: ({ row }) => <div className="capitalize">{row.getValue("name")}</div>,
+  },
+  {
+    accessorKey: "type",
+    header: "Type",
+    cell: ({ row }) => <div className="capitalize">{row.getValue("type")}</div>,
+  },
+  {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => <div className="capitalize">{row.getValue("status")}</div>,
+    cell: ({ row }) => <div className="lowercase">{row.getValue("status")}</div>,
   },
   {
-    accessorKey: "email",
-    header: "Email",
-    cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
+    accessorKey: "location",
+    header: "Location",
+    cell: ({ row }) => <div className="lowercase">{row.getValue("location")}</div>,
   },
   {
-    accessorKey: "amount",
-    header: () => <div className="text-right">Amount</div>,
-    cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("amount"));
-
-      // Format the amount as a dollar amount
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(amount);
-
-      return <div className="text-right font-medium">{formatted}</div>;
-    },
+    accessorKey: "bathroom",
+    enableHiding: true,
+  },
+  {
+    accessorKey: "bedroom",
+    enableHiding: true,
+  },
+  {
+    accessorKey: "price",
+    enableHiding: true,
+  },
+  {
+    accessorKey: "description",
+    enableHiding: true,
   },
   {
     id: "actions",
+    header: "Actions",
     enableHiding: false,
     cell: ({ row }) => {
       const payment = row.original;
 
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(payment.id)}>
-              Copy payment ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
+      return <UpdateListingDialog />;
     },
   },
 ];

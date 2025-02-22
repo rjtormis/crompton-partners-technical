@@ -8,7 +8,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
-import { columns, payments } from "./columns";
+import { columns, properties } from "./columns";
 import { DataTable } from "./data-table";
 import { Input } from "../ui/input";
 import NewListingDialog from "./new-listing-dialog";
@@ -23,7 +23,7 @@ function DashboardListing() {
           <NewListingDialog />
           <DeleteListingDialog />
         </div>
-        <DataTable columns={columns} data={payments} />
+        <DataTable columns={columns} data={properties} />
       </div>
 
       <Pagination>

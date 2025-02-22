@@ -1,7 +1,7 @@
+import { PrismaClient } from "@prisma/client";
 import type { NextAuthOptions } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { PrismaClient } from "@prisma/client";
 
 export const prisma = new PrismaClient();
 export const options: NextAuthOptions = {
@@ -21,8 +21,10 @@ export const options: NextAuthOptions = {
               name: credentials.username,
             },
           });
+          console.log(credentials);
 
           if (!user) return null;
+          console.log(credentials.password === user.password);
 
           if (credentials.password === user.password) {
             return user;

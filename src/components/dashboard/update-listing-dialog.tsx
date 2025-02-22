@@ -9,7 +9,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "../ui/button";
-import { Building, Plus } from "lucide-react";
+import { Building, Pencil, Plus } from "lucide-react";
 import { Field, FieldProps, Form, Formik, FormikHelpers } from "formik";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
@@ -25,7 +25,7 @@ import { useState } from "react";
 import FileUpload from "../file-upload";
 import { Textarea } from "../ui/textarea";
 
-function NewListingDialog() {
+function UpdateListingDialog() {
   const [files, setFiles] = useState<string[]>([]);
 
   const initialValues = {
@@ -55,8 +55,8 @@ function NewListingDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button>
-          <Plus />
+        <Button variant="ghost" size="icon">
+          <Pencil />
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -64,11 +64,11 @@ function NewListingDialog() {
           <Form>
             <DialogHeader>
               <DialogTitle className="flex gap-2">
-                <Building />
-                <span className="my-auto">Create Listing</span>
+                <Pencil />
+                <span className="my-auto">Update Listing</span>
               </DialogTitle>
               <DialogDescription>
-                Enter property details, upload images, and set availability to create your listing
+                Update property details, upload images, and set availability status.
               </DialogDescription>
             </DialogHeader>
             <div>
@@ -275,4 +275,4 @@ function NewListingDialog() {
   );
 }
 
-export default NewListingDialog;
+export default UpdateListingDialog;
