@@ -1,7 +1,17 @@
 import { options, prisma } from "@/app/api/auth/[...nextauth]/options";
-import { NextApiRequest } from "next";
+import { S3Client } from "@aws-sdk/client-s3";
+import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
+
+// Set AWS credentials
+const client = new S3Client({
+  region: process.env.AWS_REGION as string,
+  credentials: {
+    accessKeyId: process.env.AWS_AKEY as string,
+    secretAccessKey: process.env.AWS_SKEY as string,
+  },
+});
 
 export async function GET(req: Request) {
   const session = await getServerSession(options);
@@ -17,9 +27,6 @@ export async function GET(req: Request) {
   }
 
   const form = await req.formData();
-
-  // Get all images since it's a File[]
-  const images = form.getAll("images") as File[];
 
   // Check if listing exists.
   const queryProperty = await prisma.property.findFirst({
@@ -74,6 +81,8 @@ export async function PATCH(req: Request) {
   const bathroom = parseInt(form.get("bathroom") as string, 10);
   const bedroom = parseInt(form.get("bedroom") as string, 10);
   const price = parseFloat(form.get("price") as string);
+  const lat = parseFloat(form.get("lat") as string);
+  const lng = parseFloat(form.get("lng") as string);
 
   // Validate required fields
   if (
@@ -103,13 +112,36 @@ export async function PATCH(req: Request) {
       bathroom,
       bedroom,
       price,
+      lat,
+      lng,
+      images: images.map((i) => `${id}/${i.name}`),
     },
   });
+
+  await Promise.all(
+    images.map(async (image) => {
+      // Get Presigned url for authentication and security
+      const { url, fields } = await createPresignedPost(client, {
+        Bucket: process.env.AWS_BUCKET_NAME as string,
+        Key: `${updateListing.id}/${image.name}`,
+      });
+
+      // Create a new form data and append the necessary headers,attributes and etc
+      const formDataS3 = new FormData();
+      Object.entries(fields).forEach(([key, value]) => {
+        formDataS3.append(key, value);
+      });
+
+      formDataS3.append("file", image);
+      // Upload the images to AWS s3
+      await fetch(url, { method: "POST", body: formDataS3 });
+    })
+  );
 
   return NextResponse.json({ property: updateListing, message: "Property updated successfully" });
 }
 
-export const DELETE = async (req: Request) => {
+export async function DELETE(req: Request) {
   const session = await getServerSession(options);
 
   if (!session) {
@@ -122,7 +154,8 @@ export const DELETE = async (req: Request) => {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  const { id } = req.body;
+  const body = await req.json();
+  const { id } = body;
 
   if (!id) {
     return NextResponse.json({ error: "Missing or invalid form data" }, { status: 400 });
@@ -144,5 +177,5 @@ export const DELETE = async (req: Request) => {
     },
   });
 
-  return NextResponse.json({ message: "Property deleted successfully" });
-};
+  return NextResponse.json({ message: "Property deleted successfully" }, { status: 200 });
+}

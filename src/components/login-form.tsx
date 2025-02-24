@@ -91,7 +91,7 @@ function LoginForm() {
               </CardContent>
               <CardFooter className="flex justify-between w-full">
                 <Button type="submit" className="w-full" disabled={loading}>
-                  Deploy
+                  Login
                 </Button>
               </CardFooter>
             </Card>

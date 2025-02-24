@@ -32,6 +32,7 @@ function UpdateListingDialog({ listing }: { listing: Property }) {
   const [open, setOpen] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const router = useRouter();
+  console.log(files);
 
   const initialValues = {
     name: listing.name,
@@ -60,7 +61,16 @@ function UpdateListingDialog({ listing }: { listing: Property }) {
     formData.append("bedroom", String(values.bedroom));
     formData.append("bathroom", String(values.bathroom));
     formData.append("status", values.status);
+
+    const photoData = await fetch(`https://photon.komoot.io/api/?q=${values.location}&limit=1`);
+    const pd = await photoData.json();
+
     formData.append("location", values.location);
+    formData.append("lat", pd.features[0].geometry.coordinates[0]);
+    formData.append("lng", pd.features[0].geometry.coordinates[1]);
+    values.images.map((i) => {
+      formData.append("images", i);
+    });
 
     const data = await fetch(`/api/dashboard/property/${listing.id}`, {
       method: "PATCH",
@@ -94,7 +104,7 @@ function UpdateListingDialog({ listing }: { listing: Property }) {
   return (
     <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button variant="outline" size="icon">
           <Pencil />
         </Button>
       </DialogTrigger>
@@ -295,10 +305,17 @@ function UpdateListingDialog({ listing }: { listing: Property }) {
                         >
                           x
                         </button>
+                        {/* <Image
+                          width={60}
+                          height={60}
+                          src={`${process.env.NEXT_PUBLIC_AWS_LINK}/${file}`}
+                          alt="sample"
+                          className=" rounded-xl"
+                        /> */}
                         <Image
                           width={60}
                           height={60}
-                          src={file}
+                          src={`${file}`}
                           alt="sample"
                           className=" rounded-xl"
                         />

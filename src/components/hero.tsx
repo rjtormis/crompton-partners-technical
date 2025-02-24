@@ -3,7 +3,8 @@ import Image from "next/image";
 import logo from "@/assets/logo.png";
 import Link from "next/link";
 import { Button } from "./ui/button";
-function Hero() {
+import { Session } from "next-auth";
+function Hero({ session }: { session?: Session | null }) {
   return (
     <header className="flex justify-between items-center p-2 shadow-md">
       <div className="flex items-center gap-2">
@@ -24,9 +25,15 @@ function Hero() {
             </Link>
           </li>
           <li>
-            <Link href="/login">
-              <Button variant="ghost">Login</Button>
-            </Link>
+            {session ? (
+              <Link href="/dashboard">
+                <Button variant="ghost">Dashboard</Button>
+              </Link>
+            ) : (
+              <Link href="/login">
+                <Button variant="ghost">Login</Button>
+              </Link>
+            )}
           </li>
         </ul>
       </nav>

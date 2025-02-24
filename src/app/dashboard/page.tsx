@@ -1,8 +1,10 @@
 import DashboardListing from "@/components/dashboard/dashboard-listing";
 import Overview from "@/components/overview";
 import React from "react";
+import { prisma } from "../api/auth/[...nextauth]/options";
 
-function page() {
+async function page() {
+  const totalProperties = await prisma.property.count();
   return (
     <div className="h-full flex flex-col">
       <div>
@@ -10,7 +12,7 @@ function page() {
       </div>
 
       <Overview />
-      <DashboardListing />
+      <DashboardListing totalProperties={totalProperties} />
     </div>
   );
 }

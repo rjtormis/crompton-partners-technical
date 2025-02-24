@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "properties" ADD COLUMN     "datePosted" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;

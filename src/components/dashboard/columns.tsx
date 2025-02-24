@@ -1,81 +1,13 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import { Property } from "@prisma/client";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "../ui/checkbox";
-import { Button } from "../ui/button";
-import { MoreHorizontal } from "lucide-react";
 import UpdateListingDialog from "./update-listing-dialog";
-
-export const properties: Property[] = [
-  {
-    id: "m5gr84i9",
-    name: "Luxury Villa",
-    description: "A beautiful beachfront villa with stunning views.",
-    type: "villa",
-    status: "sold",
-    location: "Miami, FL",
-    bathroom: 3,
-    bedroom: 5,
-    price: 1200000,
-    userId: "user123",
-  },
-  {
-    id: "3u1reuv4",
-    name: "Modern Apartment",
-    description: "A high-rise apartment in the city center.",
-    type: "apartment",
-    status: "available",
-    location: "New York, NY",
-    bathroom: 2,
-    bedroom: 3,
-    price: 750000,
-    userId: "user456",
-  },
-  {
-    id: "derv1ws0",
-    name: "Cozy Room",
-    description: "A quiet countryside room surrounded by nature.",
-    type: "room",
-    status: "rented",
-    location: "Asheville, NC",
-    bathroom: 1,
-    bedroom: 1,
-    price: 250000,
-    userId: "user789",
-  },
-  {
-    id: "5kma53ae",
-    name: "Penthouse Suite",
-    description: "A luxury penthouse with skyline views.",
-    type: "apartment",
-    status: "sold",
-    location: "Los Angeles, CA",
-    bathroom: 4,
-    bedroom: 6,
-    price: 2200000,
-    userId: "user101",
-  },
-  {
-    id: "bhqecj4p",
-    name: "Suburban Home",
-    description: "A spacious family home in a quiet neighborhood.",
-    type: "villa",
-    status: "available",
-    location: "Dallas, TX",
-    bathroom: 3,
-    bedroom: 4,
-    price: 600000,
-    userId: "user102",
-  },
-];
+import { Button } from "../ui/button";
+import { Eye } from "lucide-react";
+import Link from "next/link";
 
 export const columns: ColumnDef<Property>[] = [
   {
@@ -140,7 +72,16 @@ export const columns: ColumnDef<Property>[] = [
     header: "Actions",
     enableHiding: false,
     cell: ({ row, listing }) => {
-      return <UpdateListingDialog listing={listing} />;
+      return (
+        <div className="flex items-center gap-2">
+          <UpdateListingDialog listing={listing} />
+          <Link href={`/listings/${listing.id}`} target="_blank">
+            <Button variant="outline" size="icon">
+              <Eye />
+            </Button>
+          </Link>
+        </div>
+      );
     },
   },
 ];

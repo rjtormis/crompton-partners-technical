@@ -1,10 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { flexRender } from "@tanstack/react-table";
 
-import { Table, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 
 import { ArrowDownIcon, ArrowUpIcon, CaretSortIcon } from "@radix-ui/react-icons";
+import { JSX } from "react";
 
 type CustomTableHeaderProps = {
   table: any;
@@ -12,11 +14,7 @@ type CustomTableHeaderProps = {
   children: JSX.Element;
 };
 
-export function CustomTableHeader({
-  table,
-  excludedColumnHeader,
-  children,
-}: CustomTableHeaderProps) {
+export function CustomTableHeader({ table, children }: CustomTableHeaderProps) {
   const hasSelectColumn = table.getHeaderGroups()[0].headers.some((h: any) => h.id === "select");
   return (
     <Table className="w-full table-auto relative">

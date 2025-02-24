@@ -28,10 +28,14 @@ model Property {
   description String @db.Text
   type String @db.VarChar(255) // Villa, Apartment and etc
   status String @db.VarChar(255)
+  lat   Float
+  lng   Float
   location String @db.VarChar(255)
-  bathroom Int @db.Integer
+  bathroom Int @db.Integer 
   bedroom Int @db.Integer
   price Float
+  datePosted DateTime @default(now())
+  images Json
   userId String
   user User @relation(fields: [userId], references: [id])
   @@map("properties")

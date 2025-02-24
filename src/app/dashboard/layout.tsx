@@ -3,7 +3,11 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { getServerSession } from "next-auth";
 import { options } from "../api/auth/[...nextauth]/options";
 import { redirect } from "next/navigation";
+import { Metadata } from "next";
 
+export const metadata: Metadata = {
+  title: "Palm Sunset | Dashboard",
+};
 export default async function Layout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(options);
 

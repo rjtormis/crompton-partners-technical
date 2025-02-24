@@ -13,33 +13,31 @@ import {
   VisibilityState,
 } from "@tanstack/react-table";
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { CustomTableHeader } from "./custom-table-header";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
+import { Property } from "@prisma/client";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  setSelectedListings: Dispatch<SetStateAction<Property[]>>;
 }
 
-export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({
+  columns,
+  data,
+  setSelectedListings,
+}: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState({
-    bathroom: false,
-    bedroom: false,
+  const [rowSelection, setRowSelection] = useState({});
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     price: false,
+    bedroom: false,
+    bathroom: false,
     description: false,
   });
-  const [rowSelection, setRowSelection] = useState({});
-
   const table = useReactTable({
     data,
     columns,
@@ -58,6 +56,22 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
       rowSelection,
     },
   });
+
+  // Memoize the selected rows instead of using the table state
+  // which will cause table to re-render always and throws
+  // maximum update depth exceeded error
+  const selectedRows = table.getSelectedRowModel().rows;
+  const selected = useMemo(() => {
+    return selectedRows.map((row) => row.original) as Property[];
+  }, [selectedRows]);
+
+  useEffect(() => {
+    if (selected.length >= 1) {
+      setSelectedListings(selected);
+    } else {
+      setSelectedListings([]);
+    }
+  }, [selected, setSelectedListings]);
 
   return (
     <div className="rounded-md border">

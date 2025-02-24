@@ -6,7 +6,6 @@ import { redirect } from "next/navigation";
 
 async function Login() {
   const session = await getServerSession(options);
-
   // Check session, if it exists we automatically redirect to the dashboard else we show the login form.
   if (session) {
     return redirect("/dashboard");

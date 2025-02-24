@@ -3,7 +3,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -21,13 +20,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Image from "next/image";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import FileUpload from "../file-upload";
 import { Textarea } from "../ui/textarea";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-function NewListingDialog() {
+interface NewListingDialogProps {
+  setRefetch: Dispatch<SetStateAction<boolean>>;
+}
+
+function NewListingDialog({ setRefetch }: NewListingDialogProps) {
   const [open, setOpen] = useState<boolean>(false);
   const [files, setFiles] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -51,6 +54,8 @@ function NewListingDialog() {
     actions: FormikHelpers<typeof initialValues>
   ) => {
     setSubmitting(true);
+    const photoData = await fetch(`https://photon.komoot.io/api/?q=${values.location}&limit=1`);
+    const pd = await photoData.json();
 
     const formData = new FormData();
 
@@ -61,9 +66,13 @@ function NewListingDialog() {
     formData.append("bedroom", values.bedroom);
     formData.append("bathroom", values.bathroom);
     formData.append("status", values.status);
-    formData.append("location", values.location);
+    formData.append("lat", pd.features[0].geometry.coordinates[0]);
+    formData.append("lng", pd.features[0].geometry.coordinates[1]);
 
-    // TODO: Handle Image upload
+    formData.append("location", values.location);
+    values.images.map((i) => {
+      formData.append("images", i);
+    });
 
     const data = await fetch("/api/dashboard/property", {
       method: "POST",
@@ -76,8 +85,10 @@ function NewListingDialog() {
       toast.success("Listing created successfully", {
         description: <p className="text-black">Listing {values.name} created successfully..</p>,
       });
+      setRefetch(true);
       actions.resetForm();
       setOpen(false);
+      setFiles([]);
       router.refresh();
     }
     // Handle existing listing toast
@@ -105,7 +116,7 @@ function NewListingDialog() {
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
           <Plus />
@@ -232,7 +243,7 @@ function NewListingDialog() {
                         </Label>
                         <Select onValueChange={(e) => form.setFieldValue("status", e)}>
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Theme" />
+                            <SelectValue placeholder="Status" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="available">Available</SelectItem>
@@ -256,7 +267,7 @@ function NewListingDialog() {
                         </Label>
                         <Select onValueChange={(e) => form.setFieldValue("type", e)}>
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Theme" />
+                            <SelectValue placeholder="Type" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="apartment">Apartment</SelectItem>

@@ -1,15 +1,43 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { prisma } from "@/app/api/auth/[...nextauth]/options";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-function Overview() {
+async function Overview() {
+  const [totalActive, totalSold, totalRented, totalVilla, totalApartment, totalRoom] =
+    await Promise.all([
+      prisma.property.count({
+        where: {
+          status: "available",
+        },
+      }),
+      prisma.property.count({
+        where: {
+          status: "sold",
+        },
+      }),
+      prisma.property.count({
+        where: {
+          status: "rented",
+        },
+      }),
+      prisma.property.count({
+        where: {
+          type: "villa",
+        },
+      }),
+      prisma.property.count({
+        where: {
+          type: "apartment",
+        },
+      }),
+      prisma.property.count({
+        where: {
+          type: "room",
+        },
+      }),
+    ]);
+
   return (
-    <div className="grid grid-cols-3 gap-4 my-10">
+    <div className="grid grid-cols-3 gap-4 my-4">
       {/* Total Properties Listed */}
       <Card>
         <CardHeader>
@@ -17,34 +45,35 @@ function Overview() {
           <CardDescription>Breakdown of active, sold, and rented properties</CardDescription>
         </CardHeader>
         <CardContent>
-          <p>
-            Active: <strong>25</strong>
-          </p>
-          <p>
-            Sold: <strong>10</strong>
-          </p>
-          <p>
-            Rented: <strong>15</strong>
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Recent Listings */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Listings</CardTitle>
-          <CardDescription>Latest properties added</CardDescription>
-        </CardHeader>
-        <CardContent className="-p">
-          <p>
-            🏡 Luxury Villa in Dubai - <span className="text-gray-500">2 hours ago</span>
-          </p>
-          <p>
-            🏢 Modern Apartment in NYC - <span className="text-gray-500">5 hours ago</span>
-          </p>
-          <p>
-            🏖️ Beach House in LA - <span className="text-gray-500">1 day ago</span>
-          </p>
+          <div className="grid grid-cols-2">
+            <div>
+              <p>
+                Active: <strong>{totalActive}</strong>
+              </p>
+              <p>
+                Sold: <strong>{totalSold}</strong>
+              </p>
+              <p>
+                Rented: <strong>{totalRented}</strong>
+              </p>
+            </div>
+            <div>
+              <p>
+                Villa: <strong>{totalVilla}</strong>
+              </p>
+              <p>
+                Apartment: <strong>{totalApartment}</strong>
+              </p>
+              <p>
+                Room: <strong>{totalRoom}</strong>
+              </p>
+            </div>
+          </div>
+          <div className="my-4">
+            <p>
+              Total: <strong>{totalActive + totalSold + totalRented}</strong>
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>
