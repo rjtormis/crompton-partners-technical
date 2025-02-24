@@ -300,6 +300,7 @@ function UpdateListingDialog({ listing }: { listing: Property }) {
                     {files.map((file, index) => (
                       <div className="relative" key={index}>
                         <button
+                          type="button"
                           className="absolute right-1 text-xs"
                           onClick={() => handleRemoveFile(file)}
                         >
